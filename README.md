@@ -7,6 +7,13 @@ This is a yet another personal finances tool consisting of two parts:
 * csv_bank_report_gobbler.py: a python script to parse bank transaction reports in a form of CSV files
 * WhereIsMyMoney.html: an HTML page to present categorized transactions in a stacked bar chart
 
+How it works:
+![Operation Diagram](https://github.com/ilookha/whereismymoney/raw/main/diagram.png)
+
+Resulting chart (using *sample_dataset*):
+![](https://github.com/ilookha/whereismymoney/raw/main/screenshot.png)
+
+
 # Usage
 ## 1. Gobble the CSV reports
 ```
