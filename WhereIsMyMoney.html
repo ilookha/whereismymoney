@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Where Is My Money? - Personal Finances Spending Report</title>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/alasql/0.6.2/alasql.min.js"></script> 
+	<script src="./utils.js"></script>
+	<script src="./expenses_data.js"></script>
+	<style>
+	canvas {
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="charts.css">
+	<link rel="icon" type="image/png" href="favicon.png">
+</head>
+
+<body>
+	<span style="font-size:30px">Year:</span>
+	<span id="dvYears" style="font-size:30px">
+	</span>
+	<hr />
+	<div style="width: 100%"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+		<canvas id="canvas_chart_details" style="display: block; width: 1908px; height: 1200px;" width="1908" height="1200" class="chartjs-render-monitor"></canvas>
+	</div>
+	<div style="width: 100%"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+		<canvas id="canvas_chart_saldo" style="display: block; width: 1908px; height: 400px;" width="1908" height="400" class="chartjs-render-monitor"></canvas>
+	</div>
+	<script>
+		var barChartDataFull = { labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], datasets: [] };
+		var barChartDataSaldo = {
+			labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+			datasets: [{
+				label: 'Monthly Saldo',
+				backgroundColor: window.chartColors.red,
+				data: []
+				}]
+			};
+		
+		function updateCharts(reportYear) {
+			barChartDataFull.datasets = [];
+			var categories = alasql("SELECT category, FIRST(categorygroup) as categorygroup from expenses GROUP BY category ORDER BY categorygroup");
+			categories.forEach(function(item) {
+				var newDataset = {
+					label: item.category,
+					backgroundColor: window.categoryProps.get(item.category).color,
+					data: []
+				};
+				for (i = 1; i <= 12; ++i)
+				{
+					var monthlySum = alasql('VALUE OF SELECT SUM(amount) FROM expenses WHERE category="'+item.category+'" AND YEAR(date)='+reportYear+' AND MONTH(date)='+i);
+					newDataset.data.push(Math.round(monthlySum));
+				}
+				barChartDataFull.datasets.push(newDataset);
+			});
+			
+			barChartDataSaldo.datasets[0].data = [];
+			for (i = 1; i <= 12; ++i)
+			{
+				var monthlySum = alasql('VALUE OF SELECT SUM(amount) FROM expenses WHERE YEAR(date)='+reportYear+' AND MONTH(date)='+i);
+				barChartDataSaldo.datasets[0].data.push(Math.round(monthlySum));
+			}
+			
+			window.chartFull.options.title.text = 'Where Has My Money Gone in '+reportYear+'?';
+			window.chartFull.update();
+			window.chartSaldo.update();
+		};
+		
+		function printYearLink(linkYear, reportYear) {
+			if (linkYear == reportYear)
+			{
+				return linkYear;
+			}
+			else
+			{
+				return ("<a href=\"?year=" + linkYear + "\">" + linkYear + "</a>");
+			}
+		};
+		
+		window.onload = function() {
+			alasql("CREATE TABLE expenses (date DATE, description TEXT, amount FLOAT, account TINYTEXT, category TINYTEXT, categorygroup INT)");
+			var ctx = document.getElementById('canvas_chart_details').getContext('2d');
+			window.chartFull = new Chart(ctx, {
+				type: 'bar',
+				data: barChartDataFull,
+				options: {
+					title: {
+						display: true,
+						text: 'Where Has My Money Gone?'
+					},
+					tooltips: {
+						mode: 'index',
+						intersect: false
+					},
+					responsive: true,
+					scales: {
+						xAxes: [{
+							stacked: true,
+						}],
+						yAxes: [{
+							stacked: true
+						}]
+					}
+				}
+			});
+			ctx = document.getElementById('canvas_chart_saldo').getContext('2d');
+			window.chartSaldo = new Chart(ctx, {
+				type: 'bar',
+				data: barChartDataSaldo,
+				options: {
+					title: {
+						display: true,
+						text: 'Monthly Outcome'
+					},
+					tooltips: {
+						mode: 'index',
+						intersect: false
+					},
+					responsive: true,
+				}
+			});
+			
+			var insertStatement = alasql.compile('INSERT INTO expenses ?');
+			window.expenses.forEach(row => {insertStatement(row)});
+			
+			var allYears = alasql("SELECT DISTINCT YEAR(date) as year FROM expenses")
+			var dvYears = document.getElementById("dvYears");
+			var reportYear = 0;
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('year'))
+			{
+				reportYear = urlParams.get('year');
+			}
+			else
+			{
+				reportYear = allYears[0]['year'];
+			}
+			
+			allYears.forEach(row => dvYears.innerHTML += ('|' + printYearLink(row['year'],reportYear) + '|&nbsp;') );
+			updateCharts(reportYear);
+		};
+	</script>
+	
+</body></html>

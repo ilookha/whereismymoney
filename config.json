@@ -1,0 +1,10 @@
+{
+	"locale": "en-CA",
+	"database_file": "money.db",
+	"data_config_file": "data_config.json",
+	"category_regexps": "category_regexps.csv",
+	"js_template": "expenses_data.js.template",
+	"fix_duplicates_on_import": true,
+	"unmatched_category": "Other",
+	"csv_output_delimiter": ";"
+}

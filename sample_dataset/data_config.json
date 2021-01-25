@@ -1,0 +1,64 @@
+{
+	"import_settings":
+	{
+		"debit":
+		{ 
+			"filename_regexp": "debit.*\\.csv",
+			"column_date":			{ "index": 0, "trim": true },
+			"column_description": 	{ "index": 1, "trim": false },
+			"column_amount":		{ "index": 2, "trim": false }
+		},
+		"credit":
+		{ 
+			"filename_regexp": "credit.*\\.csv",
+			"column_date":			{ "index": 0, "trim": true },
+			"column_description":	{ "index": 2, "trim": false },
+			"column_amount":		{ "index": 3, "trim": false }
+		}
+	},
+	"expense_categories":
+	{
+		"Salary":
+		{
+			"regexps": ["PAYROLL"],
+			"group": 1,
+			"color": "window.chartColors.teal"
+		},
+		"Rent":
+		{
+			"regexps": ["Monsieur\\sProprietaire"],
+			"group": 1,
+			"color": "window.chartColors.lightslategray"
+		},
+		"Electricity":
+		{
+			"regexps": ["Hydro\\-Watts"],
+			"group": 2,
+			"color": "window.chartColors.indigo"
+		},
+		"Phone and internet":
+		{
+			"regexps": ["Buzz","Intertron"],
+			"group": 2,
+			"color": "window.chartColors.chocolate"
+		},
+		"Groceries":
+		{
+			"regexps": ["GROCERO", "FUNBUN", "HYPERFRUIT"],
+			"group": 3,
+			"color": "window.chartColors.brown"
+		},
+		"Purchases":
+		{
+			"regexps": ["AMZN","BEST\\sBUY","BESTBUY","WAL\\*MART","PAYPAL","BBYMarketpla","STEAM\\sPURCHASE"],
+			"group": 3,
+			"color": "window.chartColors.crimson"
+		},
+		"Other":
+		{
+			"regexps": [],
+			"group": 5,
+			"color": "window.chartColors.dodgerblue"
+		}
+	}
+}
